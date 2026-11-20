@@ -393,7 +393,8 @@ Result AudioStreamAAudio::open() {
     // Ambisonic channel masks were added in API 38. Never fall back to a positional
     // stream with the same channel count because the data would be misinterpreted.
     if (mChannelAcnMask != ChannelAcnMask::Unspecified
-            && mLibLoader->builder_setChannelAcnMask == nullptr) {
+            && (mLibLoader->builder_setChannelAcnMask == nullptr
+                    || mLibLoader->stream_getChannelAcnMask == nullptr)) {
         LOGE("AudioStreamAAudio.open() ambisonic channel mask is not supported");
         return Result::ErrorUnimplemented;
     }

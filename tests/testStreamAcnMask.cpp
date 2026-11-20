@@ -283,9 +283,15 @@ protected:
         return result;
     }
 
-    void closeStream() {
+    void closeStream(bool allowAlreadyClosed = false) {
         if (mStream) {
-            EXPECT_EQ(Result::OK, mStream->close());
+            Result closeResult = mStream->close();
+            if (allowAlreadyClosed) {
+                EXPECT_TRUE(closeResult == Result::OK || closeResult == Result::ErrorClosed)
+                        << "Unexpected close result: " << convertToText(closeResult);
+            } else {
+                EXPECT_EQ(Result::OK, closeResult);
+            }
             mStream.reset();
             usleep(100 * 1000);
         }
@@ -383,11 +389,13 @@ TEST_F(StreamAcnMask, UnsupportedPlatformFailsCleanly) {
 }
 
 TEST_F(StreamAcnMask, SupportedMatchesSdkVersion) {
-    if (getSdkVersion() >= 38 || isPreReleaseOfNextSdk(37)) {
+    if (getSdkVersion() >= 38) {
         EXPECT_TRUE(OboeExtensions::isChannelAcnMaskSupported());
-    } else {
+    } else if (!isPreReleaseOfNextSdk(37)) {
         EXPECT_FALSE(OboeExtensions::isChannelAcnMaskSupported());
     }
+    // Early pre-release builds of SDK 38 (getSdkVersion() == 37, codename != "REL")
+    // may predate the AAudio ACN symbols; either true or false is valid there.
 }
 
 // Parameterized over direction x mask.
@@ -424,6 +432,7 @@ TEST_P(StreamAcnMaskOpen, OpenAllPerformanceAndSharingModes) {
     }
     const Direction direction = std::get<0>(GetParam());
     const ChannelAcnMask mask = std::get<1>(GetParam());
+    bool openedAny = false;
     for (PerformanceMode perf : {PerformanceMode::None, PerformanceMode::LowLatency,
                                  PerformanceMode::PowerSaving}) {
         for (SharingMode sharing : {SharingMode::Shared, SharingMode::Exclusive}) {
@@ -433,12 +442,16 @@ TEST_P(StreamAcnMaskOpen, OpenAllPerformanceAndSharingModes) {
                     ->setSharingMode(sharing);
             Result result = openStream();
             if (result == Result::OK) {
+                openedAny = true;
                 checkOpenedAcnStream(mask);
                 // Without MMAP there is no exclusive stream.
                 EXPECT_EQ(SharingMode::Shared, mStream->getSharingMode());
             }
             closeStream();
         }
+    }
+    if (!openedAny) {
+        GTEST_SKIP() << "Mask " << acnMaskName(mask) << " could not be opened on this device";
     }
 }
 
@@ -483,19 +496,28 @@ TEST_F(StreamAcnMask, MMapIsNotUsed) {
     }
     const bool wasMMapEnabled = OboeExtensions::isMMapEnabled();
     OboeExtensions::setMMapEnabled(true);
+    bool openedAny = false;
     for (Direction direction : {Direction::Output, Direction::Input}) {
+        const ChannelAcnMask mask = findOpenableMask(direction);
+        if (mask == ChannelAcnMask::Unspecified) {
+            continue;
+        }
         mBuilder.setDirection(direction)
-                ->setChannelAcnMask(ChannelAcnMask::Order1)
+                ->setChannelAcnMask(mask)
                 ->setPerformanceMode(PerformanceMode::LowLatency)
                 ->setSharingMode(SharingMode::Exclusive);
         Result result = openStream();
         if (result == Result::OK) {
-            checkOpenedAcnStream(ChannelAcnMask::Order1);
+            openedAny = true;
+            checkOpenedAcnStream(mask);
             EXPECT_EQ(SharingMode::Shared, mStream->getSharingMode());
         }
         closeStream();
     }
     OboeExtensions::setMMapEnabled(wasMMapEnabled);
+    if (!openedAny) {
+        GTEST_SKIP() << "No ambisonic mask could be opened on this device";
+    }
 }
 
 // Parameterized over direction x format.
@@ -516,14 +538,19 @@ TEST_P(StreamAcnMaskFormat, OpenWithFormat) {
     }
     const Direction direction = std::get<0>(GetParam());
     const AudioFormat format = std::get<1>(GetParam());
+    bool openedAny = false;
     for (ChannelAcnMask mask : {ChannelAcnMask::Order1, ChannelAcnMask::Order3Hrz}) {
         mBuilder.setDirection(direction)->setChannelAcnMask(mask)->setFormat(format);
         Result result = openStream();
         if (result == Result::OK) {
+            openedAny = true;
             checkOpenedAcnStream(mask);
             EXPECT_EQ(format, mStream->getFormat());
         }
         closeStream();
+    }
+    if (!openedAny) {
+        GTEST_SKIP() << "No ambisonic mask could be opened with format " << convertToText(format);
     }
 }
 
@@ -539,9 +566,11 @@ TEST_F(StreamAcnMask, SampleRateConversionKeepsAcnMask) {
     if (!isSupported()) {
         GTEST_SKIP() << "Ambisonic channel masks are not supported";
     }
+    bool openedAny = false;
     for (Direction direction : {Direction::Output, Direction::Input}) {
         for (ChannelAcnMask mask : {ChannelAcnMask::Order0, ChannelAcnMask::Order1,
-                                    ChannelAcnMask::Order2Hrz, ChannelAcnMask::Order3}) {
+                                    ChannelAcnMask::Order2Hrz, ChannelAcnMask::Order3Hrz,
+                                    ChannelAcnMask::Order3}) {
             mBuilder.setDirection(direction)
                     ->setChannelAcnMask(mask)
                     ->setPerformanceMode(PerformanceMode::LowLatency)
@@ -552,12 +581,16 @@ TEST_F(StreamAcnMask, SampleRateConversionKeepsAcnMask) {
                     ->setChannelConversionAllowed(true);
             Result result = openStream();
             if (result == Result::OK) {
+                openedAny = true;
                 checkOpenedAcnStream(mask);
                 EXPECT_EQ(44100, mStream->getSampleRate());
                 EXPECT_EQ(AudioFormat::Float, mStream->getFormat());
             }
             closeStream();
         }
+    }
+    if (!openedAny) {
+        GTEST_SKIP() << "No ambisonic mask could be opened with sample rate conversion";
     }
 }
 
@@ -593,15 +626,15 @@ protected:
 StreamAcnMaskData::DataResult StreamAcnMaskData::runData(ChannelAcnMask mask,
                                                          Direction direction,
                                                          bool useCallback, bool useSrc) {
-    AcnCallback callback;
-    callback.expectedChannelCount = expectedChannelCount(mask);
+    std::shared_ptr<AcnCallback> callback = std::make_shared<AcnCallback>();
+    callback->expectedChannelCount = expectedChannelCount(mask);
     std::shared_ptr<AcnErrorCallback> errorCallback = std::make_shared<AcnErrorCallback>();
     mBuilder.setDirection(direction)
             ->setChannelAcnMask(mask)
             ->setFormat(AudioFormat::Float)
             ->setErrorCallback(errorCallback);
     if (useCallback) {
-        mBuilder.setDataCallback(&callback);
+        mBuilder.setDataCallback(callback);
     }
     if (useSrc) {
         mBuilder.setPerformanceMode(PerformanceMode::LowLatency)
@@ -621,15 +654,15 @@ StreamAcnMaskData::DataResult StreamAcnMaskData::runData(ChannelAcnMask mask,
     if (useCallback) {
         // Wait for data. Output streams may get a few callbacks to prime the buffer.
         const int32_t primeCallbacks = (direction == Direction::Output) ? 8 : 0;
-        for (int i = 0; i < 40 && callback.callbackCount <= primeCallbacks; i++) {
+        for (int i = 0; i < 40 && callback->callbackCount <= primeCallbacks; i++) {
             usleep(25 * 1000);
         }
-        EXPECT_FALSE(callback.badChannelCount);
-        if (direction == Direction::Output && callback.callbackCount <= primeCallbacks) {
+        EXPECT_FALSE(callback->badChannelCount);
+        if (direction == Direction::Output && callback->callbackCount <= primeCallbacks) {
             rendered = false;
         } else {
-            EXPECT_GT(callback.callbackCount, primeCallbacks) << acnMaskName(mask);
-            EXPECT_GT(callback.framesProcessed, 0) << acnMaskName(mask);
+            EXPECT_GT(callback->callbackCount, primeCallbacks) << acnMaskName(mask);
+            EXPECT_GT(callback->framesProcessed, 0) << acnMaskName(mask);
         }
     } else {
         const int32_t framesPerTransfer = std::max(mStream->getFramesPerBurst(), 64);
@@ -662,7 +695,8 @@ StreamAcnMaskData::DataResult StreamAcnMaskData::runData(ChannelAcnMask mask,
         }
     }
     mStream->requestStop();
-    closeStream();
+    // If AAudio disconnected the stream, Oboe's error thread may already have closed it.
+    closeStream(/*allowAlreadyClosed=*/!rendered || errorCallback->errorCount > 0);
     return rendered ? DataResult::Exercised : DataResult::NotRendered;
 }
 

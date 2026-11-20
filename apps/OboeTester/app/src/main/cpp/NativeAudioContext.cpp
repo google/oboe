@@ -420,6 +420,7 @@ void ActivityTestOutput::close(int32_t streamIndex) {
 void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
     if (manyToMulti == nullptr
             || channelIndex < 0
+            || channelIndex >= static_cast<int>(manyToMulti->inputs.size())
             || channelIndex >= static_cast<int>(sineOscillators.size())
             || channelIndex >= static_cast<int>(sawtoothOscillators.size())) {
         return;
