@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <cstdlib>
 #include <dlfcn.h>
 #include <type_traits>
 #include <oboe/Utilities.h>

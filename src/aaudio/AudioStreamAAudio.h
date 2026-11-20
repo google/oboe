@@ -133,13 +133,15 @@ public:
             AAudioStream *stream,
             void *audioData,
             int32_t numFrames,
-            const std::atomic<AudioStreamAAudio *> *slotStream = nullptr);
+            const std::atomic<uint32_t> *slotGeneration = nullptr,
+            uint32_t expectedGeneration = 0);
 
     int32_t callOnPartialAudioReady(
             AAudioStream *stream,
             void *audioData,
             int32_t numFrames,
-            const std::atomic<AudioStreamAAudio *> *slotStream = nullptr);
+            const std::atomic<uint32_t> *slotGeneration = nullptr,
+            uint32_t expectedGeneration = 0);
 
     // Used by the Stop workaround thread (Android R and older); see launchStopThread().
     // Stops the stream unless requestStart() was called after `startGeneration` was read.

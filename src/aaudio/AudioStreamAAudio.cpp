@@ -17,11 +17,11 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cstdlib>
 #include <pthread.h>
 #include <unordered_map>
 #include <vector>
 #include <stdint.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #include "aaudio/AAudioLoader.h"
@@ -254,6 +254,7 @@ public:
                 info.usesParentSharedPtr = usesParentShared;
                 info.oboeStream->mWeakParentStream = sharedStream;
                 info.oboeStream->mWeakParentSet = usesParentShared;
+                break;
             }
         }
     }
@@ -431,13 +432,22 @@ public:
     static bool acquire(AudioStreamAAudio *stream, uintptr_t *handle) {
         std::lock_guard<std::mutex> lock(getLock());
         // The lowest free index, so the memory touched is bounded by the peak number of
-        // streams open at the same time.
+        // streams open at the same time. Skip any slot that still has an active callback
+        // (possible only after an unsupported self-destruction inside onAudioReady(), which
+        // calls release(/*waitForCallbacks=*/false)) so its generation and active count stay
+        // isolated until that callback calls leave().
         for (uint32_t index = 0; index < kMaxSlots; index++) {
             Slot &slot = sSlots[index];
-            if (!slot.inUse) {
+            if (!slot.inUse && slot.active.load(std::memory_order_acquire) == 0) {
                 slot.inUse = true;
-                slot.stream.store(stream);
-                const uintptr_t generation = slot.generation.load() & kGenerationMask;
+                uint32_t gen = slot.generation.load(std::memory_order_relaxed);
+                // Never issue handle 0 (nullptr userData), including on slot 0's first use
+                // or if generation wraps on 32-bit ABIs.
+                if ((gen & kGenerationMask) == 0) {
+                    gen = slot.generation.fetch_add(1, std::memory_order_relaxed) + 1;
+                }
+                slot.stream.store(stream, std::memory_order_release);
+                const uintptr_t generation = gen & kGenerationMask;
                 *handle = (generation << kIndexBits) | index;
                 return true;
             }
@@ -447,16 +457,18 @@ public:
 
     // Data callback: returns the stream and counts this callback as active, or nullptr if the
     // handle is stale (the stream was closed). Always call leave(slot) afterwards.
-    static AudioStreamAAudio *enter(void *userData, Slot **slot) {
+    static AudioStreamAAudio *enter(void *userData, Slot **slot, uint32_t *expectedGeneration) {
         const auto handle = reinterpret_cast<uintptr_t>(userData);
         *slot = &sSlots[handle & kIndexMask];
         // seq_cst here and in release(): either this callback sees the new generation, or
         // release() sees it as active and waits for it.
         (*slot)->active.fetch_add(1);
-        if (((*slot)->generation.load() & kGenerationMask) != (handle >> kIndexBits)) {
+        const uint32_t gen = (*slot)->generation.load();
+        if ((gen & kGenerationMask) != (handle >> kIndexBits)) {
             return nullptr;
         }
-        return (*slot)->stream.load();
+        *expectedGeneration = gen;
+        return (*slot)->stream.load(std::memory_order_acquire);
     }
 
     static void leave(Slot *slot) {
@@ -465,16 +477,16 @@ public:
 
     // Invalidates `handle` and frees its slot. Afterwards no data callback uses the stream, and
     // none ever will. `waitForCallbacks` is false only when no callback can be running or on
-    // the stream's own data callback thread; a later owner of the slot then waits for that
-    // callback in its own release().
+    // the stream's own data callback thread; acquire() skips the slot until active reaches 0.
     static void release(uintptr_t handle, bool waitForCallbacks) {
         Slot &slot = sSlots[handle & kIndexMask];
         slot.stream.store(nullptr);
         slot.generation.fetch_add(1);
         if (waitForCallbacks) {
             // A callback normally finishes within microseconds; sleep if it blocks.
-            for (int spins = 0; slot.active.load() != 0; ++spins) {
+            for (int spins = 0; slot.active.load() != 0; ) {
                 if (spins < 100) {
+                    ++spins;
                     std::this_thread::yield();
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -545,9 +557,11 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
         void *audioData,
         int32_t numFrames) {
     DataCallbackSlots::Slot *slot = nullptr;
-    AudioStreamAAudio *oboeStream = DataCallbackSlots::enter(userData, &slot);
+    uint32_t expectedGeneration = 0;
+    AudioStreamAAudio *oboeStream = DataCallbackSlots::enter(userData, &slot, &expectedGeneration);
     const DataCallbackResult result = (oboeStream != nullptr)
-            ? oboeStream->callOnAudioReady(stream, audioData, numFrames, &slot->stream)
+            ? oboeStream->callOnAudioReady(stream, audioData, numFrames,
+                                           &slot->generation, expectedGeneration)
             : DataCallbackResult::Stop;  // closed: never touch the stream
     DataCallbackSlots::leave(slot);
     return static_cast<aaudio_data_callback_result_t>(result);
@@ -560,10 +574,12 @@ static int32_t oboe_aaudio_partial_data_callback_proc(
         void *audioData,
         int32_t numFrames) {
     DataCallbackSlots::Slot *slot = nullptr;
-    AudioStreamAAudio *oboeStream = DataCallbackSlots::enter(userData, &slot);
+    uint32_t expectedGeneration = 0;
+    AudioStreamAAudio *oboeStream = DataCallbackSlots::enter(userData, &slot, &expectedGeneration);
     // A negative result stops the stream.
     const int32_t result = (oboeStream != nullptr)
-            ? oboeStream->callOnPartialAudioReady(stream, audioData, numFrames, &slot->stream)
+            ? oboeStream->callOnPartialAudioReady(stream, audioData, numFrames,
+                                                  &slot->generation, expectedGeneration)
             : -1;
     DataCallbackSlots::leave(slot);
     return result;
@@ -737,8 +753,14 @@ void AudioStreamAAudio::onWeakThisSet(AudioStream *stream,
 }
 
 void AudioStreamAAudio::cleanupUnclosedStream() {
-    // close() unregisters before nulling mAAudioStream, so null means nothing left to clean up.
     if (mAAudioStream.load() == nullptr) {
+        // Another thread may still be inside closeInternal() after nulling mAAudioStream
+        // (stopping, sleeping, closing the AAudioStream, waiting for data callbacks, or
+        // closing ADPF). Serialize on mCloseLock so the destructor never frees `this` (or a
+        // wrapping FilterAudioStream) before closeInternal() finishes.
+        if (!isOnOwnDataCallbackThread()) {
+            std::lock_guard<std::mutex> closeLock(mCloseLock);
+        }
         return;
     }
     if (!isOnOwnDataCallbackThread()) {
@@ -1306,6 +1328,9 @@ Result AudioStreamAAudio::closeInternal(CloseMode mode) {
     // reaching this object.
     if (hasCallbackHandle) {
         DataCallbackSlots::release(callbackHandle, /*waitForCallbacks=*/true);
+        // No data callback is running now; clear mDataCallbackThread in case an in-flight
+        // callback exited early after seeing the invalidated slot generation.
+        mDataCallbackThread.store(0, std::memory_order_relaxed);
     }
     // A data callback that ran after AudioStream::close() above may have re-opened the ADPF
     // session. No callback can reach this stream now, so close it again to avoid a leak.
@@ -1365,6 +1390,9 @@ Result AudioStreamAAudio::requestStopFromStopThread(uint32_t startGeneration) {
 // This path (workarounds enabled, Android R and older) already spawns a thread. Taking the
 // HelperLease is a lock-free atomic increment.
 void AudioStreamAAudio::launchStopThread() {
+    // Read mStartGeneration before closing the stop-thread gate so a concurrent requestStart()
+    // cannot increment mStartGeneration and re-open mStopThreadAllowed before we snapshot it.
+    const uint32_t startGeneration = mStartGeneration.load(std::memory_order_acquire);
     // Prevent multiple stop threads from being launched.
     if (mStopThreadAllowed.exchange(false)) {
         std::shared_ptr<AudioStream> sharedStream = lockWeakThis();   // atomic refcount, no lock
@@ -1376,7 +1404,6 @@ void AudioStreamAAudio::launchStopThread() {
         }
         // Stop this stream on a separate thread. Move the refs so this callback never
         // drops the last one.
-        const uint32_t startGeneration = mStartGeneration.load(std::memory_order_relaxed);
         std::thread t(oboe_stop_thread_proc, this, startGeneration, std::move(sharedStream),
                       std::move(sharedParentStream), HelperLease(mHelperThreads));
         t.detach();
@@ -1387,25 +1414,48 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(
         AAudioStream * /*stream*/,
         void *audioData,
         int32_t numFrames,
-        const std::atomic<AudioStreamAAudio *> *slotStream) {
-    // Lock-free marker so requestStop()/stop()/close()/release() and the destructor can tell
-    // they were called from inside this callback (see isOnOwnDataCallbackThread()).
-    mDataCallbackThread.store(static_cast<uintptr_t>(pthread_self()), std::memory_order_relaxed);
-    DataCallbackResult result = fireDataCallback(audioData, numFrames);
-    if (slotStream != nullptr && slotStream->load(std::memory_order_relaxed) == nullptr) {
-        // The app released its last reference inside onAudioReady(); cleanupUnclosedStream()
-        // already cleared the slot and may have freed `this`. Do not touch `this` below.
-        return DataCallbackResult::Stop;
-    }
-    if (mStopRequestedFromCallback.load(std::memory_order_relaxed)) {
-        // The app called requestStop(), stop(), close() or release() from this callback.
-        // Those calls only set the flag, so stop the stream here by returning Stop. Also stop
-        // calling the app: on Android R and older, Stop is turned into Continue below until the
-        // stop thread has stopped the stream. requestStart() re-enables the callback. (If
-        // another thread calls requestStart() at this exact moment, the restart can be lost;
-        // the same is true when the app itself returns Stop.)
-        setDataCallbackEnabled(false);
+        const std::atomic<uint32_t> *slotGeneration,
+        uint32_t expectedGeneration) {
+    DataCallbackResult result;
+    if (!isDataCallbackEnabled()) {
+        LOGW("AudioStreamAAudio::%s() called with data callback disabled!", __func__);
         result = DataCallbackResult::Stop;
+    } else {
+        // Lock-free marker so requestStop()/stop()/close()/release() and the destructor can tell
+        // they were called from inside this callback (see isOnOwnDataCallbackThread()).
+        mDataCallbackThread.store(static_cast<uintptr_t>(pthread_self()),
+                                  std::memory_order_relaxed);
+        beginPerformanceHintInCallback();
+
+        // Invoke the app callback directly (instead of AudioStream::fireDataCallback()) so we can
+        // check whether the callback destroyed `this` before touching any member or virtual method.
+        if (mDataCallback) {
+            result = mDataCallback->onAudioReady(this, audioData, numFrames);
+        } else {
+            result = onDefaultCallback(audioData, numFrames);
+        }
+        if (slotGeneration != nullptr
+                && slotGeneration->load(std::memory_order_relaxed) != expectedGeneration) {
+            // Either the app released its last reference inside onAudioReady()
+            // (cleanupUnclosedStream() already released the slot and may have freed `this`), or
+            // closeInternal() already invalidated this slot (and will clear mDataCallbackThread
+            // after leave() returns). Do not touch `this` below.
+            return DataCallbackResult::Stop;
+        }
+        // On Oreo, we might get called after returning stop. So block that here.
+        setDataCallbackEnabled(result == DataCallbackResult::Continue);
+        endPerformanceHintInCallback(numFrames);
+
+        if (mStopRequestedFromCallback.load(std::memory_order_relaxed)) {
+            // The app called requestStop(), stop(), close() or release() from this callback.
+            // Those calls only set the flag, so stop the stream here by returning Stop. Also stop
+            // calling the app: on Android R and older, Stop is turned into Continue below until the
+            // stop thread has stopped the stream. requestStart() re-enables the callback. (If
+            // another thread calls requestStart() at this exact moment, the restart can be lost;
+            // the same is true when the app itself returns Stop.)
+            setDataCallbackEnabled(false);
+            result = DataCallbackResult::Stop;
+        }
     }
     if (result != DataCallbackResult::Continue) {
         if (result == DataCallbackResult::Stop) {
@@ -1430,14 +1480,34 @@ int32_t AudioStreamAAudio::callOnPartialAudioReady(
         AAudioStream * /*stream*/,
         void *audioData,
         int32_t numFrames,
-        const std::atomic<AudioStreamAAudio *> *slotStream) {
-    mDataCallbackThread.store(static_cast<uintptr_t>(pthread_self()), std::memory_order_relaxed);
-    int32_t result = firePartialDataCallback(audioData, numFrames);
-    if (slotStream != nullptr && slotStream->load(std::memory_order_relaxed) == nullptr) {
+        const std::atomic<uint32_t> *slotGeneration,
+        uint32_t expectedGeneration) {
+    if (!isDataCallbackEnabled()) {
+        LOGW("AudioStreamAAudio::%s() called with data callback disabled!", __func__);
         return -1;
     }
+    mDataCallbackThread.store(static_cast<uintptr_t>(pthread_self()), std::memory_order_relaxed);
+    beginPerformanceHintInCallback();
+
+    int32_t result;
+    if (mPartialDataCallback) {
+        result = mPartialDataCallback->onPartialAudioReady(this, audioData, numFrames);
+    } else {
+        LOGE("AudioStreamAAudio::%s, called without a partial data callback!", __func__);
+        result = -1; // Negative value stops the stream.
+    }
+    if (slotGeneration != nullptr
+            && slotGeneration->load(std::memory_order_relaxed) != expectedGeneration) {
+        return -1;
+    }
+    if (result < 0) {
+        setDataCallbackEnabled(false);
+    }
+    endPerformanceHintInCallback(numFrames);
+
     if (mStopRequestedFromCallback.load(std::memory_order_relaxed)) {
         // The app requested a stop from this callback (see callOnAudioReady()).
+        setDataCallbackEnabled(false);
         result = -1; // A negative result stops the stream.
     }
     mDataCallbackThread.store(0, std::memory_order_relaxed);
@@ -1458,7 +1528,7 @@ Result AudioStreamAAudio::requestStart() {
         // Cancel any stop that the data callback requested but that has not happened yet
         // (see requestStopFromStopThread()), and re-enable the app's callback. Done before the
         // O_MR1 early return below, so a start always wins over an earlier pending stop.
-        mStartGeneration.fetch_add(1, std::memory_order_relaxed);
+        mStartGeneration.fetch_add(1, std::memory_order_release);
         if (anyDataCallbackSpecified()) {
             setDataCallbackEnabled(true);
         }
