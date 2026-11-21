@@ -16,6 +16,7 @@
 
 #include <memory>
 
+#include "aaudio/AudioStreamAAudio.h"
 #include "OboeDebug.h"
 #include "FilterAudioStream.h"
 
@@ -40,6 +41,23 @@ using namespace flowgraph;
 //                <= DataConversionFlowGraph::read()
 //                <== FilterAudioStream::read()
 //                <= app
+
+FilterAudioStream::~FilterAudioStream() {
+    // This parent may be the child's data/error callback, and the child's helper threads also
+    // call into it (e.g. onErrorAfterClose()); close and drain the child before mFlowGraph dies.
+    AudioStreamAAudio::closeAndWaitForChild(mChildStream.get());
+    if (mChildStream != nullptr) {
+        if (mChildStream->getParentStream() == this) {
+            mChildStream->setParentStream(nullptr);
+        }
+        if (mChildStream->getDataCallback() == this) {
+            mChildStream->swapDataCallback(nullptr);
+        }
+        if (mChildStream->getErrorCallback() == this) {
+            mChildStream->swapErrorCallback(nullptr);
+        }
+    }
+}
 
 Result FilterAudioStream::configureFlowGraph() {
     // Never up-mix or down-mix an ambisonic stream.

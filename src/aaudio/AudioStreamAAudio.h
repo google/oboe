@@ -18,9 +18,11 @@
 #define OBOE_STREAM_AAUDIO_H_
 
 #include <atomic>
+#include <pthread.h>
 #include <shared_mutex>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 #include <common/AdpfWrapper.h>
 #include "oboe/AudioStreamBuilder.h"
@@ -29,6 +31,8 @@
 #include "AAudioLoader.h"
 
 namespace oboe {
+
+class HelperThreadTracker;
 
 /**
  * Implementation of OboeStream that uses AAudio.
@@ -41,7 +45,23 @@ public:
     AudioStreamAAudio();
     explicit AudioStreamAAudio(const AudioStreamBuilder &builder);
 
-    virtual ~AudioStreamAAudio() = default;
+    virtual ~AudioStreamAAudio();
+
+    // Called by AudioStreamBuilder after wrapping a stream (or FilterAudioStream parent) in a
+    // shared_ptr. No-op for other stream types.
+    static void onWeakThisSet(AudioStream *stream,
+                              const std::shared_ptr<oboe::AudioStream> &sharedStream);
+
+    // Called by ~FilterAudioStream() to close and drain an AAudio child before the parent dies.
+    static void closeAndWaitForChild(AudioStream *child);
+
+    // Registers an atexit() handler after dlopen(libaaudio.so) to close open streams before
+    // libaaudio's static destructors run. Only the first call registers it.
+    static void registerExitHandler();
+
+    // For tests: number of AAudioStreamRegistry slots currently in use / allocated.
+    static int32_t getSlotCountForTest();
+    static int32_t getAllocatedSlotCountForTest();
 
     /**
      *
@@ -59,6 +79,7 @@ public:
     Result requestPause() override;
     Result requestFlush() override;
     Result requestStop() override;
+    Result stop(int64_t timeoutNanoseconds = kDefaultTimeoutNanos) override;
 
     ResultWithValue<int32_t> write(const void *buffer,
                   int32_t numFrames,
@@ -93,9 +114,23 @@ public:
         return AudioApi::AAudio;
     }
 
-    DataCallbackResult callOnAudioReady(AAudioStream *stream, void *audioData, int32_t numFrames);
+    oboe::DataCallbackResult callOnAudioReady(
+            AAudioStream *stream,
+            void *audioData,
+            int32_t numFrames,
+            const std::atomic<uint32_t> &slotGeneration,
+            uint32_t expectedGeneration);
 
-    int32_t callOnPartialAudioReady(AAudioStream *stream, void *audioData, int32_t numFrames);
+    int32_t callOnPartialAudioReady(
+            AAudioStream *stream,
+            void *audioData,
+            int32_t numFrames,
+            const std::atomic<uint32_t> &slotGeneration,
+            uint32_t expectedGeneration);
+
+    // Used by the Stop workaround thread (Android R and older); see launchStopThread().
+    // Stops the stream unless requestStart() was called after `startGeneration` was read.
+    Result requestStopFromStopThread(uint32_t startGeneration);
 
     bool isMMapUsed();
 
@@ -164,6 +199,10 @@ protected:
         return mAAudioStream.load();
     }
 
+    void *getCallbackUserDataForTest() const {
+        return reinterpret_cast<void *>(mSlotHandle.load(std::memory_order_relaxed));
+    }
+
     void updateFramesRead() override;
     void updateFramesWritten() override;
 
@@ -180,6 +219,21 @@ protected:
     AdpfWrapper          mAdpfWrapper;
 
 private:
+    enum class CloseMode { App, Destructor, Exit };
+
+    void closeAndWaitForHelperThreads();
+    Result closeInternal(CloseMode mode);
+    static void closeAllStreamsAtExit();
+
+    // True on Android P+ when called from this stream's own data callback (matches AAudio).
+    bool isControlCallFromOwnCallbackRejected() const;
+
+    // True if the caller is inside this stream's data/partial-data callback. Lock-free.
+    bool isOnOwnDataCallbackThread() const {
+        return mDataCallbackThread.load(std::memory_order_relaxed) ==
+                static_cast<uintptr_t>(pthread_self());
+    }
+
     // Must call under mLock. And stream must NOT be nullptr.
     Result requestStop_l(AAudioStream *stream);
 
@@ -189,8 +243,6 @@ private:
     void launchStopThread();
 
     void updateDeviceIds();
-
-private:
 
     std::atomic<bool>    mCallbackThreadEnabled;
     std::atomic<bool>    mStopThreadAllowed{false};
@@ -204,15 +256,26 @@ private:
     // We may not use this but it is so small that it is not worth allocating dynamically.
     AudioStreamErrorCallback mDefaultErrorCallback;
 
-    // With AAudio introduce routing changed callback in Android 17, aaudio may not disconnect
-    // the stream when routing is changed. In that case, UpdatedDeviceIds is introduced to track
-    // the device ids. When there is routing callback, set the value to `deviceIds[idx^1]` and then
-    // flip the `idx` to `idx^1`. The get device query will then return `deviceIds[idx]`.
+    // Tracks device ids updated by the API 37+ routing callback; never taken on the data path.
     struct UpdatedDeviceIds {
-        std::atomic<int> idx{0};
-        std::vector<std::vector<int32_t>> deviceIds{ {}, {} };
+        mutable std::mutex lock;
+        std::vector<int32_t> deviceIds;
+        std::atomic<int32_t> primaryId{kUnspecified};
     };
     UpdatedDeviceIds mUpdatedDeviceIds;
+
+    // pthread_self() while inside this stream's data callback, or 0.
+    std::atomic<uintptr_t> mDataCallbackThread{0};
+    // Set when requestStop/stop/close/release is called from own data callback.
+    std::atomic<bool> mStopRequestedFromCallback{false};
+    // Incremented by requestStart() so a stale Android <= R stop thread does not override it.
+    std::atomic<uint32_t> mStartGeneration{0};
+    // Counts active helper threads so teardown waits before freeing raw-pointer streams.
+    std::shared_ptr<HelperThreadTracker> mHelperThreads;
+    // Non-zero AAudioStreamRegistry handle passed as userData to all AAudio callbacks while open.
+    std::atomic<uintptr_t> mSlotHandle{0};
+    // Serializes closeInternal() and destructor cleanup; never taken on own data callback thread.
+    std::mutex mCloseLock;
 };
 
 } // namespace oboe
