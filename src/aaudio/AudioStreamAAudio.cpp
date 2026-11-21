@@ -112,16 +112,19 @@ static int32_t oboe_aaudio_partial_data_callback_proc(
 // streams) and locked shared_ptrs (for shared_ptr-owned streams and FilterAudioStream parents).
 template <typename Fn>
 static void spawnHelperThread(AAudioStreamRegistry::CallbackRefs refs, Fn &&fn) {
+    // Declare shared_ptrs before lease so lease is always destroyed first on unwind; otherwise
+    // dropping the last shared_ptr on this thread would deadlock on our own unattached lease.
     std::shared_ptr<AudioStream> sharedStream;
     std::shared_ptr<AudioStream> sharedParentStream;
     if (!refs.lockSharedPtrs(sharedStream, sharedParentStream)) {
         return;
     }
+    HelperLease lease = std::move(refs.lease);
     AudioStreamAAudio *oboeStream = refs.stream;
     std::thread([oboeStream,
                  sharedStream = std::move(sharedStream),
                  sharedParentStream = std::move(sharedParentStream),
-                 lease = std::move(refs.lease),
+                 lease = std::move(lease),
                  fn = std::forward<Fn>(fn)]() mutable {
         lease.attachToCurrentThread();
         fn(oboeStream);
@@ -193,7 +196,8 @@ void AudioStreamAAudio::closeAndWaitForHelperThreads() {
     // helper threads that already hold a lease before freeing memory.
     if (mAAudioStream.load() == nullptr) {
         // Another thread may still be inside closeInternal() after nulling mAAudioStream;
-        // serialize on mCloseLock so teardown finishes before `this` is freed.
+        // serialize on mCloseLock so teardown finishes before `this` is freed. Cannot lock from
+        // the own data callback thread because AAudioStream_close() waits for that callback.
         if (!isOnOwnDataCallbackThread()) {
             std::lock_guard<std::mutex> closeLock(mCloseLock);
         }
@@ -1265,7 +1269,10 @@ void AudioStreamAAudio::internalRoutingChangedCallback(
         LOGW("%s() stream already closed or closing", __func__);
         return;
     }
-    std::vector<int32_t> deviceIdsCopy(deviceIds, deviceIds + numDevices);
+    std::vector<int32_t> deviceIdsCopy;
+    if (deviceIds != nullptr && numDevices > 0) {
+        deviceIdsCopy.assign(deviceIds, deviceIds + numDevices);
+    }
     refs.stream->onRoutingChanged(deviceIdsCopy);
     if (refs.stream->getRoutingCallback() != nullptr) {
         spawnHelperThread(std::move(refs), [ids = std::move(deviceIdsCopy)](AudioStreamAAudio *s) {

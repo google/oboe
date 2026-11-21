@@ -983,8 +983,13 @@ TEST_F(TestStreamLifecycle, DeleteDuringConcurrentCloseWaitsForCloseInternal) {
                 toDelete->setDelayBeforeCloseMillis(kDelayMs);
                 ASSERT_EQ(toDelete->requestStart(), Result::OK);
             } else {
+                auto err = std::make_shared<AudioStreamErrorCallback>();
+                builder.setErrorCallback(err);
                 toDelete = openFilterPair(builder, kDelayMs, &child);
                 ASSERT_NE(toDelete, nullptr);
+                EXPECT_EQ(child->getParentStream(), toDelete.get());
+                EXPECT_NE(child->getDataCallback(), nullptr);
+                EXPECT_NE(child->getErrorCallback(), nullptr);
             }
             ASSERT_TRUE(waitUntil([&]() { return cb->count.load() >= 2; }));
 
@@ -1003,6 +1008,12 @@ TEST_F(TestStreamLifecycle, DeleteDuringConcurrentCloseWaitsForCloseInternal) {
             closer.join();
             EXPECT_EQ(static_cast<Result>(closeRes.load()), Result::OK);
             if (reachedClosed) EXPECT_GE(ms, kDelayMs / 2);
+            if (filter) {
+                EXPECT_EQ(child->getParentStream(), nullptr);
+                EXPECT_FALSE(child->hasParentStream());
+                EXPECT_EQ(child->getDataCallback(), nullptr);
+                EXPECT_EQ(child->getErrorCallback(), nullptr);
+            }
         }
     });
 }

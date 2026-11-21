@@ -161,15 +161,27 @@ public:
         explicit operator bool() const { return stream != nullptr; }
 
         bool lockSharedPtrs(std::shared_ptr<AudioStream> &streamOut,
-                            std::shared_ptr<AudioStream> &parentOut) const {
+                            std::shared_ptr<AudioStream> &parentOut) {
+            std::shared_ptr<AudioStream> lockedParent;
+            std::shared_ptr<AudioStream> lockedStream;
             if (usesParentSharedPtr) {
-                parentOut = weakParentStream.lock();
-                if (!parentOut) return false;
+                lockedParent = weakParentStream.lock();
+                if (!lockedParent) {
+                    lease.reset();
+                    return false;
+                }
             }
             if (usesSharedPtr) {
-                streamOut = weakStream.lock();
-                if (!streamOut) return false;
+                lockedStream = weakStream.lock();
+                if (!lockedStream) {
+                    // Release lease before lockedParent is destroyed so we cannot self-deadlock
+                    // in waitForOtherThreads() if lockedParent was the last reference.
+                    lease.reset();
+                    return false;
+                }
             }
+            streamOut = std::move(lockedStream);
+            parentOut = std::move(lockedParent);
             return true;
         }
     };
@@ -265,13 +277,17 @@ public:
     // Phase 2 of teardown: invalidates the data-callback slot, optionally waits for running
     // data callbacks, and returns the slot to the pool.
     static void release(uintptr_t handle, bool waitForCallbacks) {
-        if ((handle >> kIndexBits) == 0) return;
+        const uintptr_t expectedGen = handle >> kIndexBits;
+        if (expectedGen == 0) return;
         const uint32_t index = static_cast<uint32_t>(handle & kIndexMask);
         DataSlot &data = sDataSlots[index];
-        // seq_cst pairs with enterDataCallback(): either an entering callback sees the bumped
-        // generation, or we see active > 0 and wait for it.
-        data.stream.store(nullptr);
-        data.generation.fetch_add(1);
+        uint32_t gen = data.generation.load(std::memory_order_acquire);
+        if ((gen & kGenerationMask) != expectedGen) return;
+        // seq_cst CAS claims ownership of releasing this generation and pairs with
+        // enterDataCallback(): either an entering callback sees the bumped generation, or we see
+        // active > 0 and wait for it.
+        if (!data.generation.compare_exchange_strong(gen, gen + 1)) return;
+        data.stream.store(nullptr, std::memory_order_release);
         if (waitForCallbacks) {
             for (int spins = 0; data.active.load() != 0; ) {
                 if (spins < 100) {
