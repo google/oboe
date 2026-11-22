@@ -42,6 +42,7 @@ import com.google.oboe.samples.powerplay.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -54,7 +55,7 @@ class AudioForegroundService : Service() {
     private lateinit var mediaSession: MediaSession
     private var currentAlbumArt: Bitmap? = null
 
-    lateinit var player: PowerPlayAudioPlayer
+    lateinit var player: DelegatingAudioEngine
     private val binder = LocalBinder()
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
@@ -87,7 +88,7 @@ class AudioForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         try {
-            player = PowerPlayAudioPlayer()
+            player = DelegatingAudioEngine(this, serviceScope)
             player.setupAudioStream()
 
             audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
@@ -167,6 +168,10 @@ class AudioForegroundService : Service() {
         if (::mediaSession.isInitialized) {
             mediaSession.release()
         }
+
+        // Cancel the scope so the engine's state-forwarding collectors stop and don't
+        // retain the (now destroyed) Service context, the ExoPlayer, or the engines.
+        serviceScope.cancel()
     }
 
     private fun loadAlbumArt(index: Int) {
