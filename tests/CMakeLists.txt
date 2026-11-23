@@ -36,6 +36,7 @@ add_executable(
 		testStreamAcnMask.cpp
 		testStreamClosedMethods.cpp
 		testStreamFramesProcessed.cpp
+		testStreamLifecycle.cpp
 		testStreamOpen.cpp
 		testStreamStates.cpp
 		testStreamStop.cpp

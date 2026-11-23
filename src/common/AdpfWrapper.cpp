@@ -129,7 +129,13 @@ int AdpfWrapper::open(pid_t threadId,
 
 void AdpfWrapper::reportActualDuration(int64_t actualDurationNanos) {
     //LOGD("ADPF Oboe %s(dur=%lld)", __func__, (long long)actualDurationNanos);
-    std::lock_guard<std::mutex> lock(mLock);
+    // Called from the real-time data callback (directly or via reportWorkload()), so never
+    // block on the mutex. If another thread is opening or closing the session right now,
+    // skip this one report.
+    std::unique_lock<std::mutex> lock(mLock, std::try_to_lock);
+    if (!lock.owns_lock()) {
+        return;
+    }
     if (mHintSession != nullptr) {
         bool traceEnabled = Trace::getInstance().isEnabled();
         if (traceEnabled) {
