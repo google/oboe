@@ -502,7 +502,7 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
       </table>
 </div><div class="memdoc">
 <p>Create and open a stream object based on the current settings.</p>
-<p>The caller owns the pointer to the <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> object and must delete it when finished.</p>
+<p>The caller owns the pointer to the <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> object and must delete it when finished. Call close() first. Deleting an open AAudio stream closes it and waits for its callbacks, with the same caveats as releasing the last reference in <a class="el" href="#a44b68216c48f8fb08a9e63178e0b0eeb">openStream(std::shared_ptr&lt;oboe::AudioStream&gt; &amp;stream)</a>.</p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated</a></b></dt><dd>Use <a class="el" href="#a44b68216c48f8fb08a9e63178e0b0eeb">openStream(std::shared_ptr&lt;oboe::AudioStream&gt; &amp;stream)</a> instead. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -530,6 +530,7 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 </div><div class="memdoc">
 <p>Create and open a stream object based on the current settings.</p>
 <p>The caller shares the pointer to the <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> object. The shared_ptr is used internally by Oboe to prevent the stream from being deleted while it is being used by callbacks.</p>
+<p>Call stop() and close() before releasing the last reference. If an AAudio stream is still open when its last reference is released, it is closed then, and that waits for any running data, error, routing or presentation callback to return. So do not release the last reference on a thread that holds a lock that those callbacks also take, or the two threads will deadlock. Avoid it on the UI thread too, because the close can block briefly.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">stream</td><td>reference to a shared_ptr to receive the stream address </td></tr>
