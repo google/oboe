@@ -4,7 +4,7 @@ android {
     compileSdkVersion 37
     defaultConfig {
         applicationId "com.google.oboe.samples.rhythmgame"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 37
         versionCode 1
         versionName "1.0"
@@ -39,7 +39,7 @@ android {
             // Oboe has a minimum API of 16, but AMediaExtractor (used to extract the MP3 assets)
             // is only available from API 21.
             // For further backward compatibility consider using FFmpeg (see below)
-            minSdkVersion 21
+            minSdkVersion 24
             externalNativeBuild {
                 cmake {
                     arguments "-DUSE_FFMPEG=0"
@@ -55,7 +55,7 @@ android {
         /*
         ffmpegExtractor {
             dimension "extractorLibrary"
-            minSdkVersion 16
+            minSdkVersion 24
             externalNativeBuild {
                 cmake {
                     arguments "-DUSE_FFMPEG=1"

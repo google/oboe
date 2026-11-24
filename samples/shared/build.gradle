@@ -3,7 +3,7 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 37
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 37
     }
     namespace 'com.google.oboe.samples.shared'
