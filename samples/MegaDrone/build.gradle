@@ -4,7 +4,7 @@ android {
     compileSdkVersion 37
     defaultConfig {
         applicationId "com.google.oboe.samples.megadrone"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 37
         versionCode 1
         versionName "1.0"

@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId "com.mobileer.androidfxlab"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 37
         versionCode 1
         versionName "1.0"
