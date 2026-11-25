@@ -1114,7 +1114,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
 
     @GuardedBy("mAudioStateLock")
     private void closeAudioLocked() {
-        if (isClosingOrClosed()) {
+        if (isClosingOrClosedLocked()) {
             Log.d(TAG, "closeAudio() already closing");
             return;
         }
@@ -1142,6 +1142,13 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     }
 
     public boolean isClosingOrClosed() {
+        synchronized (mAudioStateLock) {
+            return isClosingOrClosedLocked();
+        }
+    }
+
+    @GuardedBy("mAudioStateLock")
+    private boolean isClosingOrClosedLocked() {
         return (mAudioState == AUDIO_STATE_CLOSING) || (mAudioState == AUDIO_STATE_CLOSED);
     }
 
